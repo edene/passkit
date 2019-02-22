@@ -64,12 +64,12 @@ class PassImages {
    * @param {string} fileName 
    * @memberof PassImages
    */
-  setImage(imageType, density = '1x', fileName) {
+  setImage(imageType, density = '1x', fileName, lang = '') {
     if (!(imageType in IMAGES))
       throw new Error(`Attempted to set unknown image type: ${imageType}`);
     const imgData = this.map.get(imageType) || new Map();
     imgData.set(density, fileName);
-    this.map.set(imageType, imgData);
+    this.map.set((lang ? lang + '/' : '') + imageType, imgData);
   }
 
   /**
@@ -79,7 +79,7 @@ class PassImages {
    * @param {string} dir - path to a directory with images
    * @memberof PassImages
    */
-  async loadFromDirectory(dir) {
+  async loadFromDirectory(dir, lang = '') {
     const fullPath = resolve(dir);
     const stats = await statAsync(fullPath);
     if (!stats.isDirectory())
@@ -88,13 +88,17 @@ class PassImages {
     const files = await readdirAsync(fullPath);
     for (const filePath of files) {
       // we are interesting only in PNG files
-      if (extname(filePath) === '.png') {
-        const fileName = basename(filePath, '.png');
-        // this will split imagename like background@2x into 'background' and '2x' and fail on anything else
-        const [, imageType, , density] =
-          /^([a-z]+)(@([2-3]x))?$/.exec(fileName) || [];
-        if (imageType in IMAGES && (!density || DENSITIES.includes(density)))
-          this.setImage(imageType, density, resolve(fullPath, filePath));
+      if (filePath.endsWith('.lproj')) {
+        this.loadFromDirectory(resolve(dir, filePath), filePath);
+      } else {
+        if (extname(filePath) === '.png') {
+          const fileName = basename(filePath, '.png');
+          // this will split imagename like background@2x into 'background' and '2x' and fail on anything else
+          const [, imageType, , density] =
+            /^([a-z]+)(@([2-3]x))?$/.exec(fileName) || [];
+          if (imageType in IMAGES && (!density || DENSITIES.includes(density)))
+            this.setImage(imageType, density, resolve(fullPath, filePath), lang);
+        }
       }
     }
 

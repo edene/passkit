@@ -329,12 +329,6 @@ class Pass extends EventEmitter {
           );
         }
       });
-
-    REQUIRED_IMAGES.some(image => {
-      if (!this.images.map.has(image))
-        throw new Error(`Missing image ${image}.png`);
-      return false;
-    });
   }
 
   // Returns the pass.json object (not a string).
