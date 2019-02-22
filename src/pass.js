@@ -378,7 +378,7 @@ class Pass extends EventEmitter {
     // Localization
     Object.entries(this.localizations).forEach(([lang, strings]) => {
       const fileName = `${lang}.lproj/pass.strings`;
-      const fileContent = Buffer.from(strings, 'utf-16');
+      const fileContent = Buffer.from(strings, 'utf8');
       manifest[fileName] = getBufferHash(fileContent);
       zip.addBuffer(fileContent, fileName, { compress: false });
     });
