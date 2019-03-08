@@ -66,10 +66,17 @@ class PassImages {
    */
   setImage(imageType, density = '1x', fileName, lang = '') {
     if (!(imageType in IMAGES))
-      throw new Error(`Attempted to set unknown image type: ${imageType}`);
-    const imgData = this.map.get(imageType) || new Map();
-    imgData.set(density, fileName);
-    this.map.set((lang ? lang + '/' : '') + imageType, imgData);
+    throw new Error(`Attempted to set unknown image type: ${imageType}`);
+   if(this.map.get(`${lang}/${imageType}`)){
+      const innerMap = this.map.get(`${lang}/${imageType}`);
+      innerMap.set(density, fileName);
+    }
+    else
+    {
+      const imgData = this.map.get(imageType) || new Map();
+      imgData.set(density, fileName);
+      this.map.set((lang ? lang + '/' : '') + imageType, imgData);
+    }
   }
 
   /**
@@ -89,7 +96,7 @@ class PassImages {
     for (const filePath of files) {
       // we are interesting only in PNG files
       if (filePath.endsWith('.lproj')) {
-        this.loadFromDirectory(resolve(dir, filePath), filePath);
+        await this.loadFromDirectory(resolve(dir, filePath), filePath);
       } else {
         if (extname(filePath) === '.png') {
           const fileName = basename(filePath, '.png');
